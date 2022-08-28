@@ -51,8 +51,8 @@ def _build_event_from_payload(**kwargs) -> tuple:
         kwargs['event'] = {
             "event": {
                 "type": "submission",
-                "submission_id": uuid.uuid4(),
-                "received": datetime.now(yukon_tz),
+                "submission_id": str(uuid.uuid4()),
+                "received": datetime.now(yukon_tz).isoformat(),
                 "event_version": "0.1.1",
                 "department": kwargs.get('department'),
                 "form_id": kwargs.get('form_id'),
