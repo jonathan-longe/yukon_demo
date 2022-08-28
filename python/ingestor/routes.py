@@ -52,7 +52,7 @@ def _build_event_from_payload(**kwargs) -> tuple:
             "event": {
                 "type": "submission",
                 "submission_id": str(uuid.uuid4()),
-                "received": datetime.now(yukon_tz).isoformat(),
+                "received": datetime.now(yukon_tz).strftime("%Y-%m-%d %H:%M:%S"),
                 "event_version": "0.1.1",
                 "department": kwargs.get('department'),
                 "form_id": kwargs.get('form_id'),
@@ -91,10 +91,6 @@ def _unable_to_write_to_rabbitmq(**args) -> tuple:
     logging.warning("unable to write to RabbitMQ")
     args['response'] = jsonify({"error": "internal system error"}), 500
     return True, args
-
-# def _decode_message(body: bytes, encoding="utf-8") -> dict:
-#     message_string = body.decode(encoding)
-#     return json.loads(message_string)
 
 
 if __name__ == "__main__":

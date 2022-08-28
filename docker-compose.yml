@@ -58,6 +58,21 @@ services:
       - 5000:5000
 
 
+  form_handler:
+    build:
+      context: python
+      dockerfile: form_handler/Dockerfile-local
+    depends_on:
+      - rabbitmq
+      - ingestor
+    environment:
+      RABBITMQ_HOST: "${RABBITMQ_HOST}"
+      RABBITMQ_USER: "${RABBITMQ_USER}"
+      RABBITMQ_PASS: "${RABBITMQ_PASS}"
+      X_STREAM_OFFSET: "first"
+    networks:
+      - internal
+
 
 networks:
   external:

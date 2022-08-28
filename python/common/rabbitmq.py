@@ -27,10 +27,14 @@ class RabbitMQ:
         logging.debug(string)
         return string
 
-    def consume(self, queue_name: str, callback):
+    def consume(self, queue_name: str, callback, x_stream_offset):
         self._verify_or_create(queue_name)
-        self.channel.basic_qos(prefetch_count=1)
-        self.channel.basic_consume(queue=queue_name, on_message_callback=callback)
+        self.channel.basic_qos(prefetch_count=5)
+        self.channel.basic_consume(queue=queue_name,
+                                   auto_ack=False,
+                                   exclusive=False,
+                                   arguments={"x-stream-offset": x_stream_offset},
+                                   on_message_callback=callback)
         try:
             self.channel.start_consuming()
         except workflow.AMQPConnectorSocketConnectError as error:
