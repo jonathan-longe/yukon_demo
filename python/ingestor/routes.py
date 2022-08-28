@@ -5,12 +5,15 @@ from flask import request, jsonify, g, Flask
 import logging
 import logging.config
 import json
+import uuid
+import pytz
+from datetime import datetime
 
 
 application = Flask(__name__)
 application.secret = Config.FLASK_SECRET_KEY
 logging.config.dictConfig(Config.LOGGING)
-logging.warning('*** ingestor initialized ***')
+logging.warning('*** ingestor initialized and ready for use ***')
 
 
 @application.before_request
@@ -18,43 +21,56 @@ def before_request_function():
     g.writer = RabbitMQ(Config())
 
 
-@application.route('/submit', methods=["POST"])
-def ingest():
+@application.route('/department/<department>/form/<form_id>/submit', methods=["POST"])
+def ingest(department, form_id):
+    # TODO - remove before flight - sanitize url parameters
     if request.method == 'POST':
-        logging.info("ingestor received data: {} | {}".format(request.remote_addr, request.get_data()))
         args = helper.execute_pipeline(
             [
-                {"try": _convert_json_to_dict, "fail": [
-                    {"try": _server_error, "fail": []},
+                {"try": _build_event_from_payload, "fail": [
+                    {"try": _unable_to_build_event, "fail": []},
                 ]},
                 {"try": _add_to_rabbitmq, "fail": [
-                    {"try": _server_error, "fail": []},
+                    {"try": _unable_to_write_to_rabbitmq, "fail": []},
                 ]},
                 {"try": _okay, "fail": []}
             ],
             queue=Config.STREAM_NAME,
             writer=g.writer,
             request=request,
+            department=department,
+            form_id=form_id,
             config=Config)
         return args.get('response')
 
 
-def _convert_json_to_dict(**kwargs) -> tuple:
+def _build_event_from_payload(**kwargs) -> tuple:
     r = kwargs.get('request')
+    yukon_tz = pytz.timezone("America/Whitehorse")
     try:
-        kwargs['payload'] = r.json
+        kwargs['event'] = {
+            "event": {
+                "type": "submission",
+                "submission_id": uuid.uuid4(),
+                "received": datetime.now(yukon_tz),
+                "event_version": "0.1.1",
+                "department": kwargs.get('department'),
+                "form_id": kwargs.get('form_id'),
+                "payload": r.json
+            }
+        }
         return True, kwargs
     except Exception as error:
-        logging.warning("failed to get json from request", str(error))
+        logging.warning("failed to build event from from the request: " + str(error))
         return False, kwargs
 
 
 def _add_to_rabbitmq(**args) -> tuple:
-    payload = args.get('payload')
+    event = args.get('event')
     queue = args.get('queue')
     writer = args.get('writer')
     logging.info('writing to {} queue'.format(queue))
-    if not writer.publish(queue, bytes(json.dumps(payload), Config.RABBITMQ_MESSAGE_ENCODING)):
+    if not writer.publish(queue, bytes(json.dumps(event), Config.RABBITMQ_MESSAGE_ENCODING)):
         logging.critical('unable to write to RabbitMQ {} queue'.format(queue))
         return False, args
     return True, args
@@ -65,11 +81,16 @@ def _okay(**args) -> tuple:
     return True, args
 
 
-def _server_error(**args) -> tuple:
-    # override the error string, we don't want to share too much externally
+def _unable_to_build_event(**args) -> tuple:
+    logging.warning("unable to build event")
     args['response'] = jsonify({"error": "internal system error"}), 500
     return True, args
 
+
+def _unable_to_write_to_rabbitmq(**args) -> tuple:
+    logging.warning("unable to write to RabbitMQ")
+    args['response'] = jsonify({"error": "internal system error"}), 500
+    return True, args
 
 # def _decode_message(body: bytes, encoding="utf-8") -> dict:
 #     message_string = body.decode(encoding)
