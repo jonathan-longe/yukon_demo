@@ -1,4 +1,4 @@
-from python.form_handler.config import Config
+from python.listener.config import Config
 from python.common.rabbitmq import RabbitMQ
 import logging
 import logging.config
@@ -29,6 +29,17 @@ class Listener:
         """
         message_dict = Listener._decode_message(body)
         logging.warning(json.dumps(message_dict, indent=4, sort_keys=False))
+        ch.basic_ack(delivery_tag=method.delivery_tag)
+
+    @staticmethod
+    def write_to_database(ch, method, properties, body):
+        """
+        Callback function
+        """
+        message_dict = Listener._decode_message(body)
+
+        logging.warning(json.dumps(message_dict, indent=4, sort_keys=False))
+        # TODO - POST message_dict to database API
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     @staticmethod

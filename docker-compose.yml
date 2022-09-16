@@ -1,7 +1,13 @@
 version: '3.8'
- 
+networks:
+  external:
+    driver: bridge
+  internal:
+    driver: bridge
+volumes:
+  drupal-data:
+  db-data:
 services:
- 
   rabbitmq:
     build: ./rabbitmq
     environment:
@@ -14,9 +20,8 @@ services:
       - external
       - internal
     ports:
-        - "15672:15672" # Web admin port
-        - "5672:5672"   # Do not expose this port in production
-
+        - "7420:15672" # Web admin port
+        # - "5672:5672"   # Do not expose this port in production
   mysql:
     image: mariadb:latest
     container_name: mysql
@@ -26,11 +31,10 @@ services:
       - db-data:/var/lib/mysql
     networks:
       - internal
-
   drupal:
     image: drupal:9.4.5
     ports:
-      - 8080:80
+      - 7422:80
     container_name: drupal
     depends_on:
       - mysql
@@ -41,11 +45,10 @@ services:
       - external
     volumes:
       - drupal-data:/var/www/html
-
   ingestor:
     build:
       context: python
-      dockerfile: ingestor/Dockerfile-local
+      dockerfile: python/ingestor/Dockerfile
     depends_on:
       - rabbitmq
     environment:
@@ -55,13 +58,11 @@ services:
     networks:
       - external
     ports:
-      - 5000:5000
-
-
-  form_handler:
+      - 7421:5000
+  listener:
     build:
       context: python
-      dockerfile: form_handler/Dockerfile-local
+      dockerfile: python/listener/Dockerfile
     depends_on:
       - rabbitmq
       - ingestor
@@ -72,14 +73,3 @@ services:
       X_STREAM_OFFSET: "first"
     networks:
       - internal
-
-
-networks:
-  external:
-    driver: bridge
-  internal:
-    driver: bridge
-
-volumes:
-  drupal-data:
-  db-data:

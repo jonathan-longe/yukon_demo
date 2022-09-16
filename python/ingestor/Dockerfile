@@ -1,28 +1,17 @@
 FROM python:3.7.3-stretch
-RUN [ "pwd" ]
-RUN [ "ls", "-R" ]
 
-COPY ingestor/requirements.txt ${APP_ROOT}/src/
-CMD [ "echo" , "requirements copied" ]
+COPY ingestor/requirements.txt /tmp/
 
-RUN source /opt/app-root/etc/scl_enable && \
-    set -x && \
-    pip install -U pip setuptools wheel && \
-    sha256sum "${APP_ROOT}/src/requirements.txt" > ${APP_ROOT}/requirements.sha256  && \
-    cd ${APP_ROOT}/src && pip install -r requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r /tmp/requirements.txt
 
-CMD [ "echo" , "requirements installed" ]
-RUN [ "pwd" ]
-RUN [ "ls", "-R" ]
+RUN useradd --create-home appuser
+WORKDIR /home/appuser
+USER appuser
 
-COPY common ${APP_ROOT}/src/python/common
-COPY ingestor ${APP_ROOT}/src/python/ingestor
+COPY common /home/appuser/python/common
+COPY ingestor /home/appuser/python/ingestor
 
-CMD [ "echo" , "python files copied" ]
-RUN [ "pwd" ]
-RUN [ "ls", "-R" ]
+# RUN ["python", "-m", "pytest"]
 
-RUN ["python", "-m", "pytest", "python/ingestor"]
-
-CMD [ "gunicorn", "--error-logfile", "-", "--bind", "0.0.0.0:5000", "--pythonpath", "python/ingestor", "wsgi" ]
-
+CMD [ "gunicorn", "--bind", "0.0.0.0:5000", "--pythonpath", "/home/appuser/python/ingestor", "wsgi" ]

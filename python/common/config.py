@@ -16,7 +16,7 @@ class Config:
     RETRY_DELAY                         = os.getenv('RETRY_DELAY', 30)
     RABBITMQ_MESSAGE_ENCODING           = 'utf-8'
 
-    STREAM_NAME                         = 'yukon'
+    STREAM_NAME                         = 'forms'
 
     # OpenShift Environment (dev, test, prod)
     ENVIRONMENT                         = os.getenv('ENVIRONMENT', 'dev')

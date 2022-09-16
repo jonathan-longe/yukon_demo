@@ -1,6 +1,6 @@
 FROM python:3.7.3-stretch
 
-COPY form_handler/requirements.txt /tmp/
+COPY listener/requirements.txt /tmp/
 
 RUN pip install --upgrade pip
 RUN pip install -r /tmp/requirements.txt
@@ -12,8 +12,8 @@ USER appuser
 ENV PYTHONPATH /home/appuser/
 
 COPY common /home/appuser/python/common
-COPY form_handler /home/appuser/python/form_handler
+COPY listener /home/appuser/python/listener
 
 # RUN ["python", "-m", "pytest"]
 
-CMD [ "python", "./python/form_handler/listener.py" ]
+CMD [ "python", "./python/listener/listener.py" ]
