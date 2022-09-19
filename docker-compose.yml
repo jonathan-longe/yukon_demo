@@ -48,7 +48,7 @@ services:
   ingestor:
     build:
       context: python
-      dockerfile: python/ingestor/Dockerfile
+      dockerfile: ingestor/Dockerfile
     depends_on:
       - rabbitmq
     environment:
@@ -62,10 +62,9 @@ services:
   listener:
     build:
       context: python
-      dockerfile: python/listener/Dockerfile
+      dockerfile: listener/Dockerfile
     depends_on:
       - rabbitmq
-      - ingestor
     environment:
       RABBITMQ_HOST: "${RABBITMQ_HOST}"
       RABBITMQ_USER: "${RABBITMQ_USER}"
