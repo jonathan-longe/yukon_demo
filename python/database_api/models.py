@@ -2,7 +2,7 @@ from python.database_api import db, ma
 
 
 class Event(db.Model):
-    id = db.Column('id', db.String(20), primary_key=True)
+    id = db.Column('id', db.String(40), primary_key=True)
     type = db.Column(db.String(20), nullable=False)
     version = db.Column(db.String(20), nullable=False)
     received = db.Column(db.DateTime, nullable=False)
@@ -18,18 +18,18 @@ class Event(db.Model):
         self.form_id = form_id
 
 
-class ReportPothole(db.Model):
-    id = db.Column('id', db.String(20), primary_key=True)
-    location = db.Column(db.String(70), nullable=False)
-    affects = db.Column(db.String(60), nullable=False)
+class RequestForSupport(db.Model):
+    id = db.Column('id', db.String(40), primary_key=True)
+    remote_addr = db.Column(db.String(70), nullable=False)
+    description_of_the_problem = db.Column(db.String(255), nullable=False)
     first_name = db.Column(db.String(40), nullable=False)
     last_name = db.Column(db.String(40), nullable=False)
-    email = db.Column(db.String(40), nullable=False)
+    urgent = db.Column(db.String(3), nullable=False)
 
-    def __init__(self, submission_id, location, affects, first_name, last_name, email):
+    def __init__(self, submission_id, remote_addr, description_of_the_problem, first_name, last_name, urgent):
         self.id = submission_id
-        self.location = location
-        self.affects = affects
+        self.remote_addr = remote_addr
+        self.description_of_the_problem = description_of_the_problem
         self.first_name = first_name
         self.last_name = last_name
-        self.email = email
+        self.urgent = urgent

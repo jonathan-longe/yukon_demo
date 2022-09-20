@@ -1,7 +1,7 @@
 import json
 import logging
 from cerberus import Validator
-from python.database_api.models import Event, db, ReportPothole
+from python.database_api.models import Event, db, RequestForSupport
 from datetime import datetime
 
 
@@ -34,7 +34,6 @@ def validate_payload(**kwargs) -> tuple:
 def create_or_update_the_event(**kwargs) -> tuple:
     logging.debug("inside create_or_update_the_event()")
     payload = kwargs.get('payload')
-    logging.warning(str(payload))
     try:
         event = Event(
             submission_id=payload['event']['submission_id'],
@@ -47,7 +46,8 @@ def create_or_update_the_event(**kwargs) -> tuple:
         db.session.merge(event)
         db.session.commit()
     except Exception as e:
-        logging.warning(str(e))
+        logging.warning("error create_or_update_the_event()" + str(e))
+        kwargs['error'] = str(e)
         return False, kwargs
     return True, kwargs
 
@@ -63,7 +63,8 @@ def create_or_update_the_payload(**kwargs) -> tuple:
         db.session.merge(model)
         db.session.commit()
     except Exception as e:
-        logging.warning(str(e))
+        logging.warning("error create_or_update_the_payload()" + str(e))
+        kwargs['error'] = str(e)
         return False, kwargs
     return True, kwargs
 
@@ -71,13 +72,13 @@ def create_or_update_the_payload(**kwargs) -> tuple:
 def _save_payload(submission_id, payload):
     return {
         "eservices": {
-            "report-a-pothole": ReportPothole(
+            "request_for_support": RequestForSupport(
                 submission_id=submission_id,
-                location=payload.get('location'),
-                affects=payload.get('affects'),
+                urgent=payload.get('urgent'),
+                description_of_the_problem=payload.get('description_of_the_problem'),
                 first_name=payload.get('first_name'),
                 last_name=payload.get('last_name'),
-                email=payload.get('email')
+                remote_addr=payload.get('remote_addr')
             )
         }
     }

@@ -64,11 +64,26 @@ services:
       context: python
       dockerfile: listener/Dockerfile
     depends_on:
+      - database_api
       - rabbitmq
     environment:
       RABBITMQ_HOST: "${RABBITMQ_HOST}"
       RABBITMQ_USER: "${RABBITMQ_USER}"
       RABBITMQ_PASS: "${RABBITMQ_PASS}"
+      X_STREAM_OFFSET: "first"
+    networks:
+      - internal
+  database_api:
+    build:
+      context: python
+      dockerfile: database_api/Dockerfile
+    depends_on:
+      - mysql
+    environment:
+      RABBITMQ_HOST: "${RABBITMQ_HOST}"
+      RABBITMQ_USER: "${RABBITMQ_USER}"
+      RABBITMQ_PASS: "${RABBITMQ_PASS}"
+      SQLALCHEMY_DATABASE_URI: "${SQLALCHEMY_DATABASE_URI}"
       X_STREAM_OFFSET: "first"
     networks:
       - internal

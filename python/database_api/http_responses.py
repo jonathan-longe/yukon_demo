@@ -18,7 +18,7 @@ def successful_update_response(**kwargs) -> tuple:
 
 
 def server_error_response(**kwargs) -> tuple:
-    kwargs['response'] = make_response({'error': 'server error'}, 500)
+    kwargs['response'] = make_response({'error': kwargs.get("error")}, 500)
     return True, kwargs
 
 

@@ -13,12 +13,11 @@ USER appuser
 COPY common /home/appuser/python/common
 COPY database_api /home/appuser/python/database_api
 
-ENV PYTHONPATH /home/appuser/
+ENV PYTHONPATH /home/appuser
 
-RUN ["python", "-m", "pytest"]
+ENV FLASK_APP __init__.py
 
-ENV FLASK_APP /home/appuser/python/database_api
-
-RUN ["flask", "rsbc", "create_db"]
+RUN [ "flask", "--app", "python/database_api/__init__.py:create_app()", "db", "upgrade"]
+# flask --app 'python/database_api/__init__.py:create_app()' db upgrade
 
 CMD [ "gunicorn", "--bind", "0.0.0.0:5000", "--pythonpath", "/home/appuser/python/database_api", "wsgi:create_app()" ]

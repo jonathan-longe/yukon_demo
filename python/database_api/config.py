@@ -9,7 +9,9 @@ class Config(BaseConfig):
     SQLALCHEMY_TRACK_MODIFICATIONS      = False
     DEBUG                               = False
     TESTING                             = False
-    SQLALCHEMY_DATABASE_URI             = 'sqlite:///app.db'
+    LOG_LEVEL                           = "DEBUG"
+    SQLALCHEMY_DATABASE_URI             = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///app.db')
+    MIGRATION_DIRECTORY                 = "python/database_api/migrations/"
 
     URL_PREFIX = os.getenv('URL_PREFIX', '')  # no trailing slash!
 

@@ -3,6 +3,7 @@ from python.common.rabbitmq import RabbitMQ
 import logging
 import logging.config
 import json
+import requests
 
 logging.config.dictConfig(Config.LOGGING)
 
@@ -37,9 +38,10 @@ class Listener:
         Callback function
         """
         message_dict = Listener._decode_message(body)
-
-        logging.warning(json.dumps(message_dict, indent=4, sort_keys=False))
-        # TODO - POST message_dict to database API
+        r = requests.post(Config.DATABASE_API_URI, json=message_dict)
+        if r.status_code != 200:
+            logging.warning(r.reason + " - " + str(r.status_code))
+            logging.warning(r.text)
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     @staticmethod
