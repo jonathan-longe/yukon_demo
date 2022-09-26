@@ -31,6 +31,9 @@ services:
       - db-data:/var/lib/mysql
     networks:
       - internal
+      - external
+    ports:
+    - 7423:3306
   drupal:
     image: drupal:9.4.5
     ports:
@@ -70,6 +73,22 @@ services:
       RABBITMQ_HOST: "${RABBITMQ_HOST}"
       RABBITMQ_USER: "${RABBITMQ_USER}"
       RABBITMQ_PASS: "${RABBITMQ_PASS}"
+      CALLBACK_FN_NAME: "write_to_database"
+      X_STREAM_OFFSET: "first"
+    networks:
+      - internal
+  viewer:
+    build:
+      context: python
+      dockerfile: listener/Dockerfile
+    depends_on:
+      - rabbitmq
+    container_name: viewer
+    environment:
+      RABBITMQ_HOST: "${RABBITMQ_HOST}"
+      RABBITMQ_USER: "${RABBITMQ_USER}"
+      RABBITMQ_PASS: "${RABBITMQ_PASS}"
+      CALLBACK_FN_NAME: "echo_to_console"
       X_STREAM_OFFSET: "first"
     networks:
       - internal
@@ -80,10 +99,6 @@ services:
     depends_on:
       - mysql
     environment:
-      RABBITMQ_HOST: "${RABBITMQ_HOST}"
-      RABBITMQ_USER: "${RABBITMQ_USER}"
-      RABBITMQ_PASS: "${RABBITMQ_PASS}"
       SQLALCHEMY_DATABASE_URI: "${SQLALCHEMY_DATABASE_URI}"
-      X_STREAM_OFFSET: "first"
     networks:
       - internal
