@@ -14,6 +14,8 @@ class Config(BaseConfig):
     EMAIL_FROM_ADDRESS                      = os.getenv('EMAIL_FROM_ADDRESS', 'to_be_determined@yukon.ca')
     EMAIL_SUBJECT                           = os.getenv('EMAIL_SUBJECT', 'A form has been submitted')
 
+    DRUPAL_WEB_ROOT                         = os.getenv('DRUPAL_WEB_ROOT')
+
     # Dictionary that maps departments and form_id to email recipient.
     # If department, form_id or email address is not listed below, the message will be ignored
     EMAIL_TO_ADDRESS = {
@@ -28,3 +30,5 @@ class Config(BaseConfig):
     }
     EMAIL_TEMPLATE_PATH = "/home/appuser/python/listener/templates"
     EMAIL_TEMPLATE_FILENAME = "form_submitted.html"
+
+

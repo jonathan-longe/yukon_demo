@@ -72,7 +72,7 @@ class Listener:
                     Config.EMAIL_FROM_ADDRESS,
                     email_to_address,
                     Config.EMAIL_SUBJECT,
-                    template.render(event)
+                    template.render(Listener._add_submission_url_to_event(event))
                 )
                 if is_success:
                     logging.warning(json.dumps(response) + " " + str(is_success))
@@ -103,6 +103,19 @@ class Listener:
             return True, resp.json()
         else:
             return False, {"error": resp.text}
+
+    @staticmethod
+    def _add_submission_url_to_event(event) -> dict:
+        uri = event['payload'].get('uri')
+        form_name = uri.split('/')
+
+        event['submission_uri'] = "{}/admin/structure/webform/manage/{}/submission/{}".format(
+            Config.DRUPAL_WEB_ROOT,
+            form_name[2],
+            event['payload'].get('sid')
+        )
+        logging.warning("new event " + json.dumps(event, indent=3))
+        return event
 
 
 if __name__ == "__main__":

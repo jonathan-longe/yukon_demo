@@ -77,21 +77,21 @@ services:
 #      X_STREAM_OFFSET: "next"
 #    networks:
 #      - internal
-#  viewer:
-#    build:
-#      context: python
-#      dockerfile: listener/Dockerfile
+  viewer:
+    build:
+      context: python
+      dockerfile: listener/Dockerfile
 #    depends_on:
 #      - rabbitmq
-#    container_name: viewer
-#    environment:
-#      RABBITMQ_HOST: "${RABBITMQ_HOST}"
-#      RABBITMQ_USER: "${RABBITMQ_USER}"
-#      RABBITMQ_PASS: "${RABBITMQ_PASS}"
-#      CALLBACK_FN_NAME: "echo_to_console"
-#      X_STREAM_OFFSET: "first"
-#    networks:
-#      - internal
+    container_name: viewer
+    environment:
+      RABBITMQ_HOST: "${RABBITMQ_HOST}"
+      RABBITMQ_USER: "${RABBITMQ_USER}"
+      RABBITMQ_PASS: "${RABBITMQ_PASS}"
+      CALLBACK_FN_NAME: "echo_to_console"
+      X_STREAM_OFFSET: "first"
+    networks:
+      - internal
   emailer:
     build:
       context: python
@@ -107,6 +107,7 @@ services:
       X_STREAM_OFFSET: "first"
       MAILGUN_API_KEY: ${MAILGUN_API_KEY}
       MAILGUN_SENDING_URL: ${MAILGUN_SENDING_URL}
+      DRUPAL_WEB_ROOT: ${DRUPAL_WEB_ROOT}
     networks:
       - internal
   database_api:
