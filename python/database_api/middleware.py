@@ -19,16 +19,19 @@ def request_contains_a_payload(**kwargs) -> tuple:
 def validate_payload(**kwargs) -> tuple:
     logging.debug("inside validate_payload()")
     message_dict = kwargs.get('payload')
-    schema = kwargs.get('validation_schemas')[message_dict['event']['department']][message_dict['event']['form_id']]
-    logging.warning(json.dumps(schema))
-    logging.warning(json.dumps(message_dict['event']['payload']))
-    v = Validator(schema)
-    v.allow_unknown = False
-    if v.validate(message_dict['event']['payload']):
-        return True, kwargs
-    logging.warning("validation error: " + json.dumps(v.errors))
-    kwargs['validation_errors'] = v.errors
-    return False, kwargs
+    try:
+        schema = kwargs.get('validation_schemas')[message_dict['event']['department']][message_dict['event']['form_id']]
+        logging.warning(json.dumps(schema))
+        logging.warning(json.dumps(message_dict['event']['payload']))
+        v = Validator(schema)
+        v.allow_unknown = False
+        if v.validate(message_dict['event']['payload']):
+            return True, kwargs
+        logging.warning("validation error: " + json.dumps(v.errors))
+        kwargs['validation_errors'] = v.errors
+        return False, kwargs
+    except KeyError as e:
+        return False, kwargs
 
 
 def create_or_update_the_event(**kwargs) -> tuple:

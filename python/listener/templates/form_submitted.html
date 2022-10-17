@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+
+{% block primary_text_1 %}
+   A form has been submitted. You can view it here:
+   <a href="#">http://138.197.131.99:7422/admin/structure/webform/manage/{{ form_id }}/{{ payload.sid }}</a>
+{% endblock %}

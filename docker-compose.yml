@@ -62,34 +62,51 @@ services:
       - external
     ports:
       - 7421:5000
-  listener:
+#  listener:
+#    build:
+#      context: python
+#      dockerfile: listener/Dockerfile
+#    depends_on:
+#      - database_api
+#      - rabbitmq
+#    environment:
+#      RABBITMQ_HOST: "${RABBITMQ_HOST}"
+#      RABBITMQ_USER: "${RABBITMQ_USER}"
+#      RABBITMQ_PASS: "${RABBITMQ_PASS}"
+#      CALLBACK_FN_NAME: "write_to_database"
+#      X_STREAM_OFFSET: "next"
+#    networks:
+#      - internal
+#  viewer:
+#    build:
+#      context: python
+#      dockerfile: listener/Dockerfile
+#    depends_on:
+#      - rabbitmq
+#    container_name: viewer
+#    environment:
+#      RABBITMQ_HOST: "${RABBITMQ_HOST}"
+#      RABBITMQ_USER: "${RABBITMQ_USER}"
+#      RABBITMQ_PASS: "${RABBITMQ_PASS}"
+#      CALLBACK_FN_NAME: "echo_to_console"
+#      X_STREAM_OFFSET: "first"
+#    networks:
+#      - internal
+  emailer:
     build:
       context: python
       dockerfile: listener/Dockerfile
-    depends_on:
-      - database_api
-      - rabbitmq
+#    depends_on:
+#      - rabbitmq
+    container_name: emailer
     environment:
       RABBITMQ_HOST: "${RABBITMQ_HOST}"
       RABBITMQ_USER: "${RABBITMQ_USER}"
       RABBITMQ_PASS: "${RABBITMQ_PASS}"
-      CALLBACK_FN_NAME: "write_to_database"
+      CALLBACK_FN_NAME: "send_via_email"
       X_STREAM_OFFSET: "first"
-    networks:
-      - internal
-  viewer:
-    build:
-      context: python
-      dockerfile: listener/Dockerfile
-    depends_on:
-      - rabbitmq
-    container_name: viewer
-    environment:
-      RABBITMQ_HOST: "${RABBITMQ_HOST}"
-      RABBITMQ_USER: "${RABBITMQ_USER}"
-      RABBITMQ_PASS: "${RABBITMQ_PASS}"
-      CALLBACK_FN_NAME: "echo_to_console"
-      X_STREAM_OFFSET: "first"
+      MAILGUN_API_KEY: ${MAILGUN_API_KEY}
+      MAILGUN_SENDING_URL: ${MAILGUN_SENDING_URL}
     networks:
       - internal
   database_api:
